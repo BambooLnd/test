@@ -231,7 +231,7 @@ if [ -f "${MAGENX_CONFIG_PATH}/distro" ]; then
     OS_DISTRO_KEY="ubuntu"
   elif [ "${OS_NAME%% *}" == "Debian" ] && [ "${OS_VERSION}" == "11" ]; then
     OS_DISTRO_KEY="debian"
-  elif [ "${OS_NAME%% *}" == "Red" ] && [ "${OS_VERSION}" == "8" ]; then
+  elif [ "${OS_NAME%% *}" == "Red" ] && [ "${OS_VERSION}" == "8.4" ]; then
     OS_DISTRO_KEY="redhat"
   elif [ "${OS_NAME%% *}" == "Amazon" ] && [ "${OS_VERSION}" == "2" ]; then
     OS_DISTRO_KEY="amazon"
