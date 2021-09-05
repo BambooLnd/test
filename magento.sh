@@ -1389,7 +1389,8 @@ name= ProxySQL YUM repository
 baseurl=https://repo.proxysql.com/ProxySQL/proxysql-2.2.x/centos/$releasever
 gpgcheck=1
 gpgkey=https://repo.proxysql.com/ProxySQL/repo_pub_key
-   dnf -y install proxysql
+EOF
+dnf -y install proxysql
  fi
 
 systemctl disable proxysql
