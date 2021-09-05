@@ -265,8 +265,6 @@ if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
   rpm --quiet -q dnf || yum install -y 'dnf*' yum-utils
   rpm --quiet -q epel-release || dnf -y install epel-release
   rpm --quiet -q curl time bc bzip2 tar || dnf -y install time bc bzip2 tar
- else
-  dpkg-query -l curl time bc bzip2 tar >/dev/null || { apt-get update; apt-get -y install curl time bc bzip2 tar; }
 fi
 
 # check if you need update
@@ -311,17 +309,13 @@ fi
 if ! grep -q "webstack_is_clean" ${MAGENX_CONFIG_PATH}/webstack >/dev/null 2>&1 ; then
  if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
     installed_packages="$(rpm -qa --qf '%{name} ' 'mysqld?|firewalld|Percona*|maria*|php-?|nginx*|*ftp*|varnish*|certbot*|redis*|webmin')"
-    else
-    installed_packages="$(apt -qq list --installed mysqld? percona-server* maria* php* nginx* ufw varnish* certbot* redis* webmin 2> /dev/null | cut -d'/' -f1 | tr '\n' ' ')"
-  fi
+    fi
   if [ ! -z "$installed_packages" ]; then
     REDTXT  "[!] WEBSTACK PACKAGES ALREADY INSTALLED"
     YELLOWTXT "[!] YOU NEED TO REMOVE THEM OR RE-INSTALL MINIMAL OS VERSION"
     echo
   if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
     echo -e "\t\t dnf remove ${installed_packages} --noautoremove"
-  else
-    echo -e "\t\t apt-get purge ${installed_packages}"
   fi
     echo
     echo
@@ -515,18 +509,7 @@ WHITETXT "----------------------------------------------------------------------
   dnf -y module reset nginx php redis varnish
   dnf -y upgrade --nobest
   echo
- elif [ "${OS_DISTRO_KEY}" == "amazon" ]; then
-  dnf install -y yum-utils
-  amazon-linux-extras install epel -y
-  dnf -y install ${EXTRA_PACKAGES_RPM} ${PERL_MODULES_RPM[@]/#/perl-}
-  dnf -y upgrade --nobest
-  echo
- else
-  apt-get -y install software-properties-common
-  apt-add-repository contrib
-  apt-get update
-  apt-get -y install ${EXTRA_PACKAGES_DEB} ${PERL_MODULES_DEB}
-  echo
+ 
  fi
  if [ "$?" != 0 ]; then
   echo
@@ -564,9 +547,7 @@ if [ "${repo_mariadb_install}" == "y" ]; then
    if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
     dnf module disable -y mysql
     dnf install -y MariaDB-server
-   else
-    apt-get update
-    apt-get install -y mariadb-server
+ 
   fi
   if [ "$?" = 0 ] # if package installed then configure
     then
@@ -577,8 +558,7 @@ if [ "${repo_mariadb_install}" == "y" ]; then
      echo
     if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
      rpm -qa 'mariadb*' | awk '{print "  Installed: ",$1}'
-    else
-     apt -qq list --installed mariadb*
+ 
     fi
      echo
      WHITETXT "Downloading my.cnf file from MagenX Github repository"
@@ -623,10 +603,6 @@ enabled=1
 gpgkey=https://nginx.org/keys/nginx_signing.key
 module_hotfixes=true
 END
-  else
-   echo "deb http://nginx.org/packages/mainline/${OS_DISTRO_KEY} `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
-   curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
-   echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" | tee /etc/apt/preferences.d/99nginx
   fi
    echo
    GREENTXT "REPOSITORY INSTALLED  -  OK"
@@ -636,9 +612,6 @@ END
   if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
    dnf -y -q install nginx nginx-module-perl nginx-module-image-filter
    rpm  --quiet -q nginx
-  else
-   apt-get update
-   apt-get -y install nginx nginx-module-perl nginx-module-image-filter nginx-module-geoip
   fi
   if [ "$?" = 0 ]; then
     echo
@@ -647,8 +620,6 @@ END
     systemctl enable nginx >/dev/null 2>&1
    if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
     rpm -qa 'nginx*' | awk '{print "  Installed: ",$1}'
-   else
-    apt -qq list --installed nginx*
    fi
    else
     echo
@@ -675,15 +646,6 @@ if [ "${repo_install}" == "y" ]; then
   dnf -y module enable php:remi-${PHP_VERSION}
   dnf config-manager --set-enabled remi >/dev/null 2>&1
   rpm  --quiet -q remi-release
- elif [ "${OS_DISTRO_KEY}" == "amazon" ]; then
-  dnf install -y ${REPO_REMI_RPM//8/7}
-  dnf config-manager --set-enabled remi >/dev/null 2>&1
-  rpm  --quiet -q remi-release
- elif [ "${OS_DISTRO_KEY}" == "debian" ]; then
-  wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
-  echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
- else
-  add-apt-repository ppa:ondrej/php -y
  fi
  if [ "$?" = 0 ]; then
    echo
@@ -695,9 +657,6 @@ if [ "${repo_install}" == "y" ]; then
   if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
    dnf -y install php ${PHP_PACKAGES_RPM[@]/#/php-} ${PHP_PECL_PACKAGES_RPM[@]/#/php-}
    rpm  --quiet -q php
-  else
-   apt-get update
-   apt-get -y install php${PHP_VERSION} ${PHP_PACKAGES_DEB[@]/#/php${PHP_VERSION}-} php-pear
   fi
   if [ "$?" = 0 ]; then
     echo
@@ -705,8 +664,6 @@ if [ "${repo_install}" == "y" ]; then
     echo
    if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
     rpm -qa 'php*' | awk '{print "  Installed: ",$1}'
-   else
-    apt -qq list --installed php*
    fi
    else
     echo
@@ -735,8 +692,6 @@ if [ "${redis_install}" == "y" ]; then
  if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
   dnf -y -q module install redis:remi-6.0
   rpm  --quiet -q redis
- else
-  apt-get -y install redis-server
  fi
  if [ "$?" = 0 ]; then
      echo
@@ -746,9 +701,6 @@ if [ "${redis_install}" == "y" ]; then
     if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
      rpm -qa 'redis*' | awk '{print "  Installed: ",$1}'
      redis_conf="/etc/redis.conf"
-        else
-     apt -qq list --installed redis-server*
-     redis_conf="/etc/redis/redis.conf"
     fi
 echo
 cat > /etc/systemd/system/redis@.service <<END
@@ -836,16 +788,6 @@ if [ "${rabbit_install}" == "y" ];then
    curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.rpm.sh | bash
    dnf -y install rabbitmq-server
    rpm  --quiet -q rabbitmq-server
- elif [ "${OS_DISTRO_KEY}" == "debian" ]; then
-  wget -O- https://packages.erlang-solutions.com/debian/erlang_solutions.asc | apt-key add -
-  echo "deb https://packages.erlang-solutions.com/debian bullseye contrib" | tee /etc/apt/sources.list.d/erlang.list
-  curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.deb.sh | bash
-  apt-get -y install rabbitmq-server
- else
-  wget -O- https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc | apt-key add -
-  echo "deb https://packages.erlang-solutions.com/ubuntu focal contrib" | tee /etc/apt/sources.list.d/erlang.list
-  curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.deb.sh | bash
-  apt-get -y install rabbitmq-server
  fi
  if [ "$?" = 0 ]; then
 cat > /etc/rabbitmq/env <<END
@@ -891,8 +833,6 @@ END
    echo
   if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
    rpm -qa 'rabbitmq*' | awk '{print "  Installed: ",$1}'
-  else
-   apt -qq list --installed rabbitmq*
   fi
   else
    echo
@@ -917,10 +857,6 @@ if [ "${varnish_install}" == "y" ];then
    echo
    dnf -y install varnish
    rpm  --quiet -q varnish
-  else
-  curl -s https://packagecloud.io/install/repositories/varnishcache/varnish65/script.deb.sh | bash
-  apt-get update
-  apt-get -y install varnish
  fi
  if [ "$?" = 0 ]; then
    echo
@@ -932,8 +868,6 @@ if [ "${varnish_install}" == "y" ];then
    echo
   if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
    rpm -qa 'varnish*' | awk '{print "  Installed: ",$1}'
-  else
-   apt -qq list --installed varnish*
   fi
   else
    echo
@@ -968,11 +902,6 @@ EOF
 echo
    dnf -y -q install --enablerepo=elasticsearch-${ELKREPO} elasticsearch kibana
    rpm  --quiet -q elasticsearch
-  else
-   wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add -
-   echo "deb https://artifacts.elastic.co/packages/${ELKREPO}/apt stable main" > /etc/apt/sources.list.d/elastic-${ELKREPO}.list
-   apt-get update
-   apt-get -y install elasticsearch kibana
   fi
   if [ "$?" = 0 ]; then
           echo
@@ -986,8 +915,6 @@ sed -i "s/.*-Xms.*/-Xms512m/" /etc/elasticsearch/jvm.options
 sed -i "s/.*-Xmx.*/-Xmx2048m/" /etc/elasticsearch/jvm.options
  if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
   sed -i "s,#JAVA_HOME=,JAVA_HOME=/usr/share/elasticsearch/jdk/," /etc/sysconfig/elasticsearch
- else
-  sed -i "s,#JAVA_HOME=,JAVA_HOME=/usr/share/elasticsearch/jdk/," /etc/default/elasticsearch
  fi
 chown -R :elasticsearch /etc/elasticsearch/*
 systemctl daemon-reload
@@ -1011,8 +938,6 @@ GREENTXT "ELASTCSEARCH ${ELKVER} INSTALLED  -  OK"
 echo
  if [[ "${OS_DISTRO_KEY}" =~ (redhat|amazon) ]]; then
   rpm -qa 'elasticsearch*' | awk '{print "  Installed: ",$1}'
- else
-  apt -qq list --installed elasticsearch*
  fi
  else
 echo
