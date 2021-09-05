@@ -30,7 +30,7 @@ REPO_REMI_RPM="http://rpms.famillecollet.com/enterprise/remi-release-8.rpm"
 # WebStack Packages
 EXTRA_PACKAGES_DEB="curl jq gnupg2 auditd apt-transport-https apt-show-versions ca-certificates lsb-release make autoconf snapd automake libtool uuid-runtime \
 perl openssl unzip recode ed e2fsprogs screen inotify-tools iptables smartmontools clamav mlocate unzip vim wget sudo bc apache2-utils \
-logrotate git python3-pip python3-dateutil python3-dev patch ipset strace rsyslog geoipupdate moreutils lsof xinetd jpegoptim sysstat acl attr iotop expect webp imagemagick snmp"
+logrotate git python3 python3-pip python3-dateutil python3-dev patch ipset strace rsyslog geoipupdate moreutils lsof xinetd jpegoptim sysstat acl attr iotop expect webp imagemagick snmp"
 PERL_MODULES_DEB="liblwp-protocol-https-perl libdbi-perl libconfig-inifiles-perl libdbd-mysql-perl  libterm-readkey-perl"
 PHP_PACKAGES_DEB=(cli fpm json common mysql zip lz4 gd mbstring curl xml bcmath intl ldap soap oauth apcu)
 
@@ -852,8 +852,6 @@ read varnish_install
 if [ "${varnish_install}" == "y" ];then
  if [ "${OS_DISTRO_KEY}" == "redhat" ]; then
    curl -s https://packagecloud.io/install/repositories/varnishcache/varnish65/script.rpm.sh | bash
-  elif [ "${OS_DISTRO_KEY}" == "amazon" ]; then
-   curl -s https://packagecloud.io/install/repositories/varnishcache/varnish65/script.rpm.sh | bash os=el dist=7
    echo
    dnf -y install varnish
    rpm  --quiet -q varnish
