@@ -1384,28 +1384,13 @@ wget -qO /usr/local/bin/mytop ${MYSQL_TOP}
 
 if [ "${OS_DISTRO_KEY}" == "redhat" ]; then
 cat <<EOF | tee /etc/yum.repos.d/proxysql.repo
-   [proxysql_repo]
-   name= ProxySQL YUM repository
-   baseurl=https://repo.proxysql.com/ProxySQL/proxysql-2.2.x/centos/$releasever
-   gpgcheck=1
-   gpgkey=https://repo.proxysql.com/ProxySQL/repo_pub_key
-EOF
+[proxysql_repo]
+name= ProxySQL YUM repository
+baseurl=https://repo.proxysql.com/ProxySQL/proxysql-2.2.x/centos/$releasever
+gpgcheck=1
+gpgkey=https://repo.proxysql.com/ProxySQL/repo_pub_key
    dnf -y install proxysql
- elif [ "${OS_DISTRO_KEY}" == "amazon" ]; then
-cat <<EOF | tee /etc/yum.repos.d/proxysql.repo
-   [proxysql_repo]
-   name=ProxySQL YUM repository
-   baseurl=https://repo.proxysql.com/ProxySQL/proxysql-2.2.x/centos/latest
-   gpgcheck=1
-   gpgkey=https://repo.proxysql.com/ProxySQL/repo_pub_key
-EOF
-   dnf -y install proxysql
- else
-   wget -O - 'https://repo.proxysql.com/ProxySQL/repo_pub_key' | apt-key add - 
-   echo deb https://repo.proxysql.com/ProxySQL/proxysql-2.2.x/$(lsb_release -sc)/ ./ | tee /etc/apt/sources.list.d/proxysql.list
-   apt-get update
-   apt -y install proxysql
-fi
+ fi
 
 systemctl disable proxysql
 
@@ -1565,7 +1550,7 @@ echo
 cd /usr/local/src
 wget ${MALDET}
 tar -zxf maldetect-current.tar.gz
-cd maldetect*
+cd maldetect*/
 ./install.sh
 
 sed -i 's/email_alert="0"/email_alert="1"/' /usr/local/maldetect/conf.maldet
